@@ -96,6 +96,10 @@ class Main extends Component {
     stoped: true,
   };
 
+componentWillUnmount() {
+  clearTimeout(a);
+}
+
   onLogoutPress = () => {
     this.props.navigation.navigate('Login');
   };
