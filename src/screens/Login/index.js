@@ -45,11 +45,6 @@ class Login extends Component {
   };
 
   onLoginPress = () => {
-    // this.props.navigator.resetTo({
-    //   screen: 'Main',
-    //   title: '',
-    //   passProps: { name: this.state.name },
-    // });
     this.props.navigation.navigate('Main', {
       name: this.state.name
     })

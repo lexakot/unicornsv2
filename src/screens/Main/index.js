@@ -52,6 +52,12 @@ const styles = StyleSheet.create({
     height: height * 0.07,
     backgroundColor: 'red',
   },
+  stopButtonDisabled: {
+    width: height * 0.07,
+    height: height * 0.07,
+    backgroundColor: 'red',
+    opacity: 0.3,
+  },
   logoutButton: {
     flex: 1,
     backgroundColor: 'red',
@@ -65,6 +71,7 @@ const styles = StyleSheet.create({
 });
 
 let a = '';
+const platform = Platform.OS;
 class Main extends Component {
   static navigationOptions = {
     title: 'Main',
@@ -81,19 +88,16 @@ class Main extends Component {
     this.animatedValue1 = new Animated.Value(0);
     this.animatedValue2 = new Animated.Value(0);
     this.animatedValue3 = new Animated.Value(0);
+    this.animatedValue4 = new Animated.Value(0);
   }
 
   state = {
     paused: true,
-    stoped: false,
+    stoped: true,
   };
 
   onLogoutPress = () => {
-    Keyboard.dismiss();
-    this.props.navigator.resetTo({
-      screen: 'Login',
-      title: '',
-    });
+    this.props.navigation.navigate('Login');
   };
 
   onPauseClick = () => {
@@ -101,6 +105,7 @@ class Main extends Component {
     Animated.timing(this.animatedValue1).stop();
     Animated.timing(this.animatedValue2).stop();
     Animated.timing(this.animatedValue3).stop();
+    Animated.timing(this.animatedValue4).stop();
     clearTimeout(a);
   }
 
@@ -110,11 +115,15 @@ class Main extends Component {
     this.animatedValue1.setValue(0);
     this.animatedValue2.setValue(0);
     this.animatedValue3.setValue(0);
+    this.animatedValue4.setValue(0);
     this.setState({ stoped: true }); 
   };
 
   animate() {
     const duration = [Math.random() * 1000 + 4000, Math.random() * 1000 + 4000, Math.random() * 1000 + 4000];
+    if (platform === 'ios') {
+      duration.push(Math.random() * 1000) ;
+    }
     this.setState({ paused: false });
     this.setState({ stoped: false });
     Animated.timing(
@@ -138,12 +147,24 @@ class Main extends Component {
         duration: duration[2],
       },
     ).start();
+    Animated.timing(
+      this.animatedValue4,
+      {
+        toValue: 1,
+        duration: duration[3],
+      },
+    ).start();
     const min = Math.min(...duration);
     const indexMin = duration.indexOf(min);
     a = setTimeout(() => {
       if (!this.state.paused) {
         Alert.alert('Winner', `Unicorn number ${indexMin + 1} won!`);
         this.setState({ paused: true });
+        this.setState({ stoped: true });
+        this.animatedValue1.setValue(0);
+        this.animatedValue2.setValue(0);
+        this.animatedValue3.setValue(0);
+        this.animatedValue4.setValue(0);
       }
     }, min);
   }
@@ -162,6 +183,10 @@ class Main extends Component {
       inputRange: [0, 1],
       outputRange: [0, width - 70],
     });
+    const marginLeft4 = this.animatedValue4.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0, width - 70],
+    });
     return (
       <View style={styles.container}>
         <View style={styles.header}>
@@ -170,7 +195,7 @@ class Main extends Component {
             {this.state.paused ?
               <TouchableOpacity onPress={() => this.animate()} style={styles.startButton} /> :
               <TouchableOpacity onPress={() => this.onPauseClick()} style={styles.pauseButton} />}
-            <TouchableOpacity disabled={this.state.stoped} onPress={() => this.onStopClick()} style={styles.stopButton} />
+            <TouchableOpacity disabled={this.state.stoped} onPress={() => this.onStopClick()} style={[styles.stopButton, this.state.stoped && styles.stopButtonDisabled]} />
           </View>
         </View>
         <View style={styles.raceContainer}>
@@ -192,6 +217,12 @@ class Main extends Component {
  }}
             source={unicorn}
           />
+          { platform === 'ios' ? <Animated.Image
+            style={{
+ width: 100, height: 100, top: 0, marginLeft: marginLeft4,
+ }}
+            source={unicorn}
+          /> : null }
         </View>
         <TouchableOpacity onPress={this.onLogoutPress} style={styles.logoutButton}>
           <Text style={styles.logoutText}>Logout</Text>
